@@ -1,6 +1,5 @@
 import {
     Component,
-    EventEmitter,
     forwardRef,
     Injector,
     Input,
@@ -11,6 +10,7 @@ import {
     Output,
     Renderer2,
     SimpleChanges,
+    ViewChild,
   } from '@angular/core';
   import { NG_VALUE_ACCESSOR } from '@angular/forms';
   
@@ -31,16 +31,15 @@ import { ReCaptchaService } from '../services/recaptcha.service';
     ]
   })
   export class ReCaptcha2Component extends BaseReCaptchaComponent implements OnChanges, OnDestroy {
-  
     /**
     * Name of the global expire callback
     */
-    protected readonly windowOnErrorCallbackProperty = 'recaptcha_error_callback';
+    protected readonly windowOnErrorCallbackProperty = 'ngx_captcha_error_callback';
   
     /**
     * Name of the global error callback
     */
-    protected readonly windowOnExpireCallbackProperty = 'recaptcha_expire_callback';
+    protected readonly windowOnExpireCallbackProperty = 'ngx_captcha_expire_callback';
   
     /**
      * Theme

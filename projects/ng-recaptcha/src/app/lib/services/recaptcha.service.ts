@@ -52,6 +52,7 @@ export class ReCaptchaService {
     }
 
     cleanup(): void {
+        console.log('ENTROU PRIMEIRO AQUI EIN')
         window[this.windowOnLoadCallbackProperty] = undefined;
         window[this.windowGrecaptcha] = undefined;
     }
@@ -61,6 +62,7 @@ export class ReCaptchaService {
      */
     private grecaptchaScriptLoaded(): boolean {
         if (window[this.windowOnLoadCallbackProperty] && window[this.windowGrecaptcha]) {
+            console.log('TÁ AQUI CARAI')
             return true;
         }
         return false;
@@ -81,9 +83,14 @@ export class ReCaptchaService {
     * Url to google api script
     */
     private getCaptchaScriptUrl(useGlobalDomain: boolean, render: string, language?: string): string {
+        // const domain = useGlobalDomain ? this.globalDomain : this.defaultDomain;
         const domain = useGlobalDomain ? this.globalDomain : this.defaultDomain;
 
         // tslint:disable-next-line:max-line-length
+        console.log(this.windowOnLoadCallbackProperty)
+        console.log(render)
+        console.log(this.getLanguageParam(language))
+        console.log(`https://www.${domain}/recaptcha/api.js?onload=${this.windowOnLoadCallbackProperty}&render=${render}${this.getLanguageParam(language)}`)
         return `https://www.${domain}/recaptcha/api.js?onload=${this.windowOnLoadCallbackProperty}&render=${render}${this.getLanguageParam(language)}`;
     }
 

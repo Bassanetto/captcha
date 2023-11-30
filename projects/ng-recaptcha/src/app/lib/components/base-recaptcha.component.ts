@@ -19,7 +19,7 @@ import { ReCaptchaService } from '../services/recaptcha.service';
 
 @Component({
     template: ''
-  })
+})
 
 export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueAccessor, AfterViewInit {
 
@@ -151,13 +151,28 @@ export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueA
         protected injector: Injector,
         protected recaptchaService: ReCaptchaService,
     ) { }
-    ngAfterViewInit(): void {
-        throw new Error('Method not implemented.');
-    }
 
-    // ngAfterViewInit() {
-    //     this.control = this.injector.get(NgControl).control;
-    // }
+    ngAfterViewInit() {
+        const ngControl = this.injector.get(NgControl);
+        const newElem = this.renderer.createElement('div');
+
+        // Ensure that the control is an instance of FormControl
+        if (ngControl instanceof NgControl && ngControl.control instanceof FormControl) {
+            this.control = ngControl.control;
+            // Now you can safely use FormControl-specific properties/methods on this.control
+        } 
+        if (this.captchaElemId) {
+            newElem.id = this.captchaElemId;
+        }
+
+        if (this.captchaWrapperElem) {
+            this.renderer.appendChild(this.captchaWrapperElem.nativeElement, newElem);
+        }
+
+        else {
+            console.error('NgControl or its control is not an instance of FormControl.');
+        }
+    }
 
     /**
     * Gets reCaptcha properties
@@ -235,10 +250,11 @@ export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueA
     }
 
     protected ensureCaptchaElem(captchaElemId: string): void {
+        console.log(captchaElemId, 'foi')
         const captchaElem = document.getElementById(captchaElemId);
 
-        if (!captchaElem) {
-            throw Error(`Captcha element with id '${captchaElemId}' was not found`);
+        if (this.captchaWrapperElem) {
+            this.captchaWrapperElem.nativeElement.innerHTML = '';
         }
 
         // assign captcha alem
@@ -253,6 +269,7 @@ export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueA
         // details: https://github.com/Enngage/ngx-captcha/issues/26
         this.zone.runOutsideAngular(() => {
             this.captchaId = this.reCaptchaApi.render(this.captchaElemId, this.getCaptchaProperties());
+            console.log(this.captchaId)
             this.ready.next();
         });
     }
@@ -285,7 +302,7 @@ export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueA
 
         // create captcha wrapper
         this.createAndSetCaptchaElem();
-
+        console.log('passa por aqui')
         this.recaptchaService.registerCaptchaScript(this.useGlobalDomain, 'explicit', (grecaptcha) => {
             this.onloadCallback(grecaptcha);
         }, this.hl);
@@ -312,7 +329,9 @@ export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueA
         this.renderReCaptcha();
 
         // setup component if it was flagged as such
+        console.log(this.setupAfterLoad, 'loaded')
         if (this.setupAfterLoad) {
+            console.log('entrou')
             this.setupAfterLoad = false;
             this.setupComponent();
         }
@@ -329,15 +348,6 @@ export abstract class BaseReCaptchaComponent implements OnChanges, ControlValueA
         if (!this.captchaElemId) {
             throw Error(`Captcha elem Id is not set`);
         }
-
-        // remove old html
-        this.captchaWrapperElem.nativeElement.innerHTML = '';
-
-        // create new wrapper for captcha
-        const newElem = this.renderer.createElement('div');
-        newElem.id = this.captchaElemId;
-
-        this.renderer.appendChild(this.captchaWrapperElem.nativeElement, newElem);
 
         // update captcha elem
         this.ensureCaptchaElem(this.captchaElemId);
